@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit URL</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <h1>Edit URL</h1>
+    <form method="POST">
+        <input type="url" name="long_url" value="{{ url.long_url }}" required>
+        <button type="submit">Update</button>
+    </form>
+</body>
+</html>

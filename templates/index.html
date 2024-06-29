@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>URL Shortener</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <h1>URL Shortener</h1>
+    {% if current_user.is_authenticated %}
+        <a href="{{ url_for('dashboard') }}">Dashboard</a>
+        <a href="{{ url_for('logout') }}">Logout</a>
+    {% else %}
+        <a href="{{ url_for('register') }}">Register</a>
+        <a href="{{ url_for('login') }}">Login</a>
+    {% endif %}
+    <form action="/shorten" method="post">
+        <input type="url" name="long_url" placeholder="Enter URL to shorten" required>
+        <input type="text" name="custom_alias" placeholder="Enter custom alias (optional)">
+        <button type="submit">Shorten</button>
+    </form>
+    {% if short_url %}
+    <div class="result">
+        Short URL is: <a href="{{ short_url }}">{{ short_url }}</a>
+    </div>
+    {% endif %}
+</body>
+</html>
