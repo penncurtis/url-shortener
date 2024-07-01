@@ -26,7 +26,7 @@ class URLMapping(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     short_url = db.Column(db.String(6), unique=True, nullable=False)
     long_url = db.Column(db.String(2048), nullable=False)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -37,7 +37,14 @@ def generate_short_url():
 
 @app.route('/')
 def home():
-    return render_template('index.html')
+    user_urls = URLMapping.query.filter_by(user_id=current_user.id).all() if current_user.is_authenticated else []
+    return render_template('index.html', urls=user_urls)
+
+@app.route('/dashboard')
+@login_required
+def dashboard():
+    user_urls = URLMapping.query.filter_by(user_id=current_user.id).all()
+    return render_template('dashboard.html', urls=user_urls)
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -60,7 +67,7 @@ def login():
         user = User.query.filter_by(username=username).first()
         if user and bcrypt.check_password_hash(user.password, password):
             login_user(user)
-            return redirect(url_for('dashboard'))
+            return redirect(url_for('home'))
         else:
             flash('Login unsuccessful. Please check username and password.', 'danger')
     return render_template('login.html')
@@ -72,19 +79,23 @@ def logout():
     return redirect(url_for('home'))
 
 @app.route('/shorten', methods=['POST'])
-@login_required
 def shorten_url():
     long_url = request.form['long_url']
     custom_alias = request.form.get('custom_alias')
 
     if custom_alias:
+        if not current_user.is_authenticated:
+            flash('You need to be logged in to create a custom alias.', 'danger')
+            return redirect(url_for('home'))
+        
         short_url = custom_alias
         if URLMapping.query.filter_by(short_url=short_url).first():
             return render_template('index.html', error="Custom alias already exists.")
     else:
         short_url = generate_short_url()
 
-    new_mapping = URLMapping(short_url=short_url, long_url=long_url, user_id=current_user.id)
+    user_id = current_user.id if current_user.is_authenticated else None
+    new_mapping = URLMapping(short_url=short_url, long_url=long_url, user_id=user_id)
     db.session.add(new_mapping)
     db.session.commit()
 
@@ -99,24 +110,18 @@ def redirect_url(short_url):
     else:
         return '<h1>URL not found</h1>'
 
-@app.route('/dashboard')
-@login_required
-def dashboard():
-    user_urls = URLMapping.query.filter_by(user_id=current_user.id).all()
-    return render_template('dashboard.html', urls=user_urls)
-
 @app.route('/delete/<int:url_id>', methods=['POST'])
 @login_required
 def delete_url(url_id):
     url_mapping = URLMapping.query.get_or_404(url_id)
     if url_mapping.user_id != current_user.id:
         flash('You are not authorized to delete this URL', 'danger')
-        return redirect(url_for('dashboard'))
+        return redirect(url_for('home'))
     
     db.session.delete(url_mapping)
     db.session.commit()
     flash('URL deleted successfully', 'success')
-    return redirect(url_for('dashboard'))
+    return redirect(url_for('home'))
 
 @app.route('/edit/<int:url_id>', methods=['GET', 'POST'])
 @login_required
@@ -124,13 +129,13 @@ def edit_url(url_id):
     url_mapping = URLMapping.query.get_or_404(url_id)
     if url_mapping.user_id != current_user.id:
         flash('You are not authorized to edit this URL', 'danger')
-        return redirect(url_for('dashboard'))
+        return redirect(url_for('home'))
     
     if request.method == 'POST':
         url_mapping.long_url = request.form['long_url']
         db.session.commit()
         flash('URL updated successfully', 'success')
-        return redirect(url_for('dashboard'))
+        return redirect(url_for('home'))
     
     return render_template('edit_url.html', url=url_mapping)
 

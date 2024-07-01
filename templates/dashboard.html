@@ -8,22 +8,30 @@
 </head>
 <body>
     <h1>Dashboard</h1>
-    <a href="{{ url_for('logout') }}">Logout</a>
-    <a href="{{ url_for('home') }}" class="button">Create More URLs</a>
+    <div class="header">
+        <a href="{{ url_for('home') }}" class="button">Create More URLs</a>
+        <a href="{{ url_for('logout') }}" class="button">Logout</a>
+    </div>
     <h2>Your URLs</h2>
-    <ul>
+    <div class="urls-list">
         {% for url in urls %}
-        <li>
-            <a href="{{ url.short_url }}" target="_blank">{{ url.short_url }}</a> - {{ url.long_url }}
-            <form action="{{ url_for('delete_url', url_id=url.id) }}" method="post" style="display:inline;">
-                <button type="submit">Delete</button>
-            </form>
-            <form action="{{ url_for('edit_url', url_id=url.id) }}" method="get" style="display:inline;">
-                <button type="submit">Edit</button>
-            </form>
-        </li>
+        <div class="url-item">
+            <div class="url-short">
+                <a href="{{ url.short_url }}" target="_blank">{{ url.short_url }}</a>
+            </div>
+            <div class="url-long">
+                <input type="text" value="{{ url.long_url }}" readonly>
+            </div>
+            <div class="url-actions">
+                <form action="{{ url_for('delete_url', url_id=url.id) }}" method="post" style="display:inline;">
+                    <button type="submit" class="button delete">Delete</button>
+                </form>
+                <form action="{{ url_for('edit_url', url_id=url.id) }}" method="get" style="display:inline;">
+                    <button type="submit" class="button edit">Edit</button>
+                </form>
+            </div>
+        </div>
         {% endfor %}
-    </ul>
+    </div>
 </body>
 </html>
-
