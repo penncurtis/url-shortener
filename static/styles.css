@@ -127,7 +127,7 @@ a.button:hover {
     margin-top: 20px;
     padding: 20px;
     text-align: left;
-    width: 300px;
+    width: 350px;
     display: flex;
     flex-direction: column;
 }

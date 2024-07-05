@@ -7,11 +7,15 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
 <body>
-    <h1>Dashboard</h1>
     <div class="header">
         <a href="{{ url_for('home') }}" class="button">Create More URLs</a>
-        <a href="{{ url_for('logout') }}" class="button">Logout</a>
+        {% if current_user.is_authenticated %}
+            <a href="{{ url_for('logout') }}" class="button">Logout</a>
+        {% else %}
+            <a href="{{ url_for('login') }}" class="button">Login</a>
+        {% endif %}
     </div>
+    <h1>Dashboard</h1>
     <h2>Your URLs</h2>
     <div class="urls-list">
         {% for url in urls %}

@@ -37,6 +37,7 @@ def generate_short_url():
 
 @app.route('/')
 def home():
+    print("Current User Authenticated:", current_user.is_authenticated)
     user_urls = URLMapping.query.filter_by(user_id=current_user.id).all() if current_user.is_authenticated else []
     return render_template('index.html', urls=user_urls)
 
@@ -67,6 +68,7 @@ def login():
         user = User.query.filter_by(username=username).first()
         if user and bcrypt.check_password_hash(user.password, password):
             login_user(user)
+            print("User logged in:", current_user.username)
             return redirect(url_for('home'))
         else:
             flash('Login unsuccessful. Please check username and password.', 'danger')
